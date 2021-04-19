@@ -1,4 +1,6 @@
-import mongoose from 'mongoose';
+// import mongoose from 'mongoose';
+
+const mongoose = require('mongoose');
 
 const environmentSchema = mongoose.Schema({
     time: Number,
@@ -10,6 +12,6 @@ const environmentSchema = mongoose.Schema({
     }
 }, { versionKey: false });
 
-const Environment = mongoose.model('Environment', environmentSchema, 'environment');
+module.exports = mongoose.model('Environment', environmentSchema, 'environment');
 
-export default Environment;
+// export default Environment;

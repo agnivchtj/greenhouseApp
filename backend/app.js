@@ -1,10 +1,8 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import bodyParser from 'body-parser';
-
-import Environment from './models/environment.js';
-import Soil from './models/soil.js';
-
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const Environment = require('./models/environment');
+const Soil = require('./models/soil');
 
 const app = express();
 const DATABASE_URL = 'mongodb://localhost:27017/greenhouse_db';
