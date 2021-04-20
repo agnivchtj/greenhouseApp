@@ -1,5 +1,3 @@
-// import mongoose from 'mongoose';
-
 const mongoose = require('mongoose');
 
 const soilSchema = mongoose.Schema({
@@ -12,5 +10,3 @@ const soilSchema = mongoose.Schema({
 }, { versionKey: false });
 
 module.exports = mongoose.model('Soil', soilSchema, 'soil');
-
-// export default Soil;

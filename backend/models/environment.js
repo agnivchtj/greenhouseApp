@@ -1,5 +1,3 @@
-// import mongoose from 'mongoose';
-
 const mongoose = require('mongoose');
 
 const environmentSchema = mongoose.Schema({
@@ -13,5 +11,3 @@ const environmentSchema = mongoose.Schema({
 }, { versionKey: false });
 
 module.exports = mongoose.model('Environment', environmentSchema, 'environment');
-
-// export default Environment;

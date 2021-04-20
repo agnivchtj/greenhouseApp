@@ -1,12 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require('cors');
+
 const Environment = require('./models/environment');
 const Soil = require('./models/soil');
+const Tomato = require('./models/tomato');
+const Production = require('./models/production');
 
 const app = express();
 const DATABASE_URL = 'mongodb://localhost:27017/greenhouse_db';
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 mongoose.connect(DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
@@ -17,6 +21,7 @@ db.once('open', () => console.log('Connected to database'));
 // Routes
 const router = express.Router();
 
+app.use(cors());
 app.use('/api', router);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -43,7 +48,7 @@ app.get('/api/environment', async (req, res) => {
 });
 
 // Creating a new data entry
-app.post('/api/environment', async (req, res) => {
+app.post('/api/environment/add', async (req, res) => {
     const body = req.body;
     const newEntry = new Environment({
         time: body.time, 
@@ -78,12 +83,14 @@ app.get('/api/environment/:environment_id', async (req, res) => {
 });
 
 // Updating entry by id
-app.patch('/api/environment/:environment_id', async (req, res) => {
+app.patch('/api/environment/add/:environment_id', async (req, res) => {
     try {
         const updated_EnvEntry = await Environment.updateOne(
             { _id: req.params.environment_id }, 
             {
-                $set: { 
+                $set: {
+                    time: req.body.time, 
+                    sensorId: req.body.sensorId,   
                     data: {
                         light_intensity: req.body.data.light_intensity, 
                         relative_humidity: req.body.data.relative_humidity, 
@@ -158,7 +165,7 @@ app.get('/api/soil', async (req, res) => {
 });
 
 // Creating a new data entry
-app.post('/api/soil', async (req, res) => {
+app.post('/api/soil/add', async (req, res) => {
     const body = req.body;
     const newEntry = new Soil({
         time: body.time, 
@@ -192,12 +199,14 @@ app.get('/api/soil/:soil_id', async (req, res) => {
 });
 
 // Updating entry by id
-app.patch('/api/soil/:soil_id', async (req, res) => {
+app.patch('/api/soil/add/:soil_id', async (req, res) => {
     try {
         const updated_SoilEntry = await Soil.updateOne(
             { _id: req.params.soil_id }, 
             {
-                $set: { 
+                $set: {
+                    time: req.body.time, 
+                    sensorId: req.body.sensorId,  
                     data: {
                         moisture: req.body.data.moisture, 
                         pH: req.body.data.pH
@@ -245,6 +254,249 @@ app.get('/api/soil/sensorId/:sensor_id', async (req, res) => {
         const soilEntries = await Soil.find({ sensorId: req.params.sensor_id });
         console.log(soilEntries);
         res.status(200).json(soilEntries);
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+
+
+
+
+
+// CRUD: Tomatoes data
+// Getting all data
+app.get('/api/tomatoes', async (req, res) => {
+    try {
+        const tomatoData = await Tomato.find();
+        console.log(tomatoData);
+        res.status(200).json(tomatoData);
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+// Creating a new data entry
+app.post('/api/tomatoes/add', async (req, res) => {
+    const body = req.body;
+    const newEntry = new Tomato({
+        name: body.name, 
+        harvest_per_year: body.harvest_per_year, 
+        num_plants: body.num_plants, 
+        env_condition: {
+            light_intensity: {
+                low: body.env_condition.light_intensity.low, 
+                high: body.env_condition.light_intensity.high, 
+                unit: body.env_condition.light_intensity.unit
+            }, 
+            relative_humidity: {
+                low: body.env_condition.relative_humidity.low, 
+                high: body.env_condition.relative_humidity.high, 
+                unit: body.env_condition.relative_humidity.unit
+            }, 
+            temperature: {
+                daytime: {
+                    low: body.env_condition.temperature.daytime.low, 
+                    high: body.env_condition.temperature.daytime.high, 
+                    unit: body.env_condition.temperature.daytime.unit
+                }, 
+                nighttime: {
+                    low: body.env_condition.temperature.nighttime.low, 
+                    high: body.env_condition.temperature.nighttime.high, 
+                    unit: body.env_condition.temperature.nighttime.unit
+                }
+            }
+        }, 
+        soil_condition: {
+            moisture: {
+                low: body.soil_condition.moisture.low, 
+                high: body.soil_condition.moisture.high, 
+                unit: body.soil_condition.moisture.unit
+            }, 
+            pH: {
+                low: body.soil_condition.pH.low, 
+                high: body.soil_condition.pH.high, 
+                unit: body.soil_condition.pH.unit
+            }
+        }
+    });
+    console.log(newEntry);
+
+    try {
+        await newEntry.save();
+        res.status(200).json(newEntry);
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+// Getting entry by id
+app.get('/api/tomatoes/:tomato_id', async (req, res) => {
+    try {
+        const tomato = await Tomato.findOne({ _id: req.params.tomato_id });
+        console.log(tomato);
+        res.status(200).json(tomato);
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+// Updating entry by id
+app.patch('/api/tomatoes/add/:tomato_id', async (req, res) => {
+    try {
+        const updated_tomato = await Tomato.updateOne(
+            { _id: req.params.tomato_id }, 
+            {
+                $set: {
+                    name: req.body.name, 
+                    harvest_per_year: req.body.harvest_per_year, 
+                    num_plants: req.body.num_plants, 
+                    env_condition: {
+                        light_intensity: {
+                            low: req.body.env_condition.light_intensity.low, 
+                            high: req.body.env_condition.light_intensity.high, 
+                            unit: req.body.env_condition.light_intensity.unit
+                        }, 
+                        relative_humidity: {
+                            low: req.body.env_condition.relative_humidity.low, 
+                            high: req.body.env_condition.relative_humidity.high, 
+                            unit: req.body.env_condition.relative_humidity.unit
+                        }, 
+                        temperature: {
+                            daytime: {
+                                low: req.body.env_condition.temperature.daytime.low, 
+                                high: req.body.env_condition.temperature.daytime.high, 
+                                unit: req.body.env_condition.temperature.daytime.unit
+                            }, 
+                            nighttime: {
+                                low: req.body.env_condition.temperature.nighttime.low, 
+                                high: req.body.env_condition.temperature.nighttime.high, 
+                                unit: req.body.env_condition.temperature.nighttime.unit
+                            }
+                        }
+                    }, 
+                    soil_condition: {
+                        moisture: {
+                            low: req.body.soil_condition.moisture.low, 
+                            high: req.body.soil_condition.moisture.high, 
+                            unit: req.body.soil_condition.moisture.unit
+                        }, 
+                        pH: {
+                            low: req.body.soil_condition.pH.low, 
+                            high: req.body.soil_condition.pH.high, 
+                            unit: req.body.soil_condition.pH.unit
+                        }
+                    }
+                }
+            }
+        );
+
+        console.log(updated_tomato);
+        res.status(200).json(updated_tomato);
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+// Removing entry by id
+app.delete('/api/tomatoes/:tomato_id', async (req, res) => {
+    try {
+        const removed_tomato = await Tomato.remove({ _id: req.params.tomato_id });
+
+        console.log(removed_tomato);
+        res.status(200).json(removed_tomato);
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+
+
+
+
+
+
+// CRUD: Production
+// Getting all data
+app.get('/api/production', async (req, res) => {
+    try {
+        const productionData = await Production.find();
+        console.log(productionData);
+        res.status(200).json(productionData);
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+// Creating a new data entry
+app.post('/api/production/add', async (req, res) => {
+    const body = req.body;
+    const newEntry = new Production({
+        name: body.name, 
+        harvest_date: body.harvest_date, 
+        num_plants: body.num_plants, 
+        weight: body.weight
+    });
+    console.log(newEntry);
+
+    try {
+        await newEntry.save();
+        res.status(200).json(newEntry);
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+// Getting entry by id
+app.get('/api/production/:tomato_id', async (req, res) => {
+    try {
+        const productionEntry = await Production.findOne({ _id: req.params.tomato_id });
+        console.log(productionEntry);
+        res.status(200).json(productionEntry);
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+// Updating entry by id
+app.patch('/api/production/add/:tomato_id', async (req, res) => {
+    try {
+        const updated_prodEntry = await Production.updateOne(
+            { _id: req.params.tomato_id }, 
+            {
+                $set: {
+                    name: req.body.name, 
+                    harvest_date: req.body.harvest_date, 
+                    num_plants: req.body.num_plants,  
+                    weight: req.body.weight
+                }
+            }
+        );
+
+        console.log(updated_prodEntry);
+        res.status(200).json(updated_prodEntry);
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+// Removing entry by id
+app.delete('/api/production/:tomato_id', async (req, res) => {
+    try {
+        const removed_prodEntry = await Production.remove({ _id: req.params.tomato_id });
+
+        console.log(removed_prodEntry);
+        res.status(200).json(removed_prodEntry);
 
     } catch (error) {
         res.status(404).json({ message: error.message });
