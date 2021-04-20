@@ -9,10 +9,9 @@ const Tomato = require('./models/tomato');
 const Production = require('./models/production');
 
 const app = express();
-const DATABASE_URL = 'mongodb://localhost:27017/greenhouse_db';
 const PORT = process.env.PORT || 5000;
 
-mongoose.connect(DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.ATLAS_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 db.on('error', (error) => console.log(error));
 db.once('open', () => console.log('Connected to database'));
