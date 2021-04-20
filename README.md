@@ -1,1 +1,3 @@
-# greenhouseApp
+# Greenhouse App
+
+This project involved aggregating greenhouse data and implementing a REST API to perform create, read, update and delete (CRUD) operations on the data. As such, the tech stack used was Node.js, Mongoose and MongoDB for the backend and React and Javascript for the frontend. The API was designed to make use of HTTP request-response protocol on the web server to retrieve json-format data from the database; the API is called on the user interface/ frontend and the data retrieved is represented in a concise format for users with flexibility to update entries or add new ones in the existing collections.
